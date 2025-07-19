@@ -50,6 +50,154 @@ window functions mainly relies on Partitioned Table Functions (PTF).
 
 ---
 
+### 3.3 SQL Action - Average / Spend Per Day > 3
+
+---
+
+### 📋 Sample Data: `transaction`
+
+### **1. Identify Customers with Average / Spend Per Day > 3**
+
+We are given a table `transaction` with fields:
+
+- `customer_id` (string) - ID of the customer
+- `txn_date` (date) - Date of the transaction
+- `txn_time` (string) - Time of the transaction
+- `txn_amount` (int) - Transaction amount
+
+| customer_id | txn_date | txn_time | txn_amount |
+| --- | --- | --- | --- |
+| C001 | 2024-07-01 | 10:00:00 | 2 |
+| C001 | 2024-07-01 | 15:30:00 | 1 |
+| C001 | 2024-07-02 | 12:45:00 | 4 |
+| C002 | 2024-07-01 | 11:00:00 | 5 |
+| C002 | 2024-07-02 | 16:00:00 | 1 |
+| C003 | 2024-07-01 | 09:00:00 | 3 |
+| C003 | 2024-07-02 | 10:30:00 | 3 |
+| C003 | 2024-07-02 | 13:15:00 | 1 |
+| C004 | 2024-07-01 | 10:00:00 | 2 |
+
+### ✅ Goal
+
+The task is to identify customers whose average daily transaction amount is greater than 3.
+
+---
+
+🔹 **Approach** : 
+
+1. Group transactions by `customer_id` and `txn_date` to calculate the total transaction amount for each customer on each day.
+2. Calculate the average daily transaction amount by grouping by `customer_id` again.
+3. Filter out customers whose average daily spend is greater than 3.
+
+```sql
+SELECT
+    customer_id,
+    AVG(daily_sum) AS average_spend
+FROM (
+    SELECT
+        customer_id,
+        txn_date,
+        SUM(txn_amount) AS daily_sum
+    FROM transaction
+    GROUP BY customer_id, txn_date
+) AS daily_spend
+GROUP BY customer_id
+HAVING AVG(daily_sum) > 3;
+```
+
+---
+
+### 📊 Intermediate process（daily_sum）：
+
+| customer_id | txn_date | daily_sum |
+| --- | --- | --- |
+| C001 | 2024-07-01 | 3 |
+| C001 | 2024-07-02 | 4 |
+| C002 | 2024-07-01 | 5 |
+| C002 | 2024-07-02 | 1 |
+| C003 | 2024-07-01 | 3 |
+| C003 | 2024-07-02 | 4 |
+| C004 | 2024-07-01 | 2 |
+
+---
+
+### 📈 Result：
+
+| customer_id | average_spend |
+| --- | --- |
+| **C001** | (3 + 4)/2 = 3.5 |
+| **C003** | (3 + 4)/2 = 3.5 |
+
+### **2. Calculate Average Days Between Transactions for Each Customer**
+
+### **Problem Statement:**
+
+Given the same `transaction` table, calculate the average number of days between transactions for each customer.
+
+---
+
+### **Approach:**
+
+1. Use the `LAG` window function to get the previous transaction date for each customer.
+2. Calculate the difference in days between the current and previous transactions using `DATEDIFF`.
+3. Group by `customer_id` and calculate the average.
+
+---
+
+Step 1: Get previous transaction date
+
+| customer_id | txn_date | prev_transaction_date |
+| --- | --- | --- |
+| C001 | 2024-07-01 | NULL |
+| C001 | 2024-07-01 | 2024-07-01 |
+| C001 | 2024-07-02 | 2024-07-01 |
+| C002 | 2024-07-01 | NULL |
+| C002 | 2024-07-02 | 2024-07-01 |
+| C003 | 2024-07-01 | NULL |
+| C003 | 2024-07-02 | 2024-07-01 |
+| C003 | 2024-07-02 | 2024-07-02 |
+| C004 | 2024-07-01 | NULL |
+
+Step  2: Calculate days between transactions
+
+| customer_id | date_between_transactions |
+| --- | --- |
+| C001 | 0 |
+| C001 | 1 |
+| C002 | 1 |
+| C003 | 1 |
+| C003 | 0 |
+
+Step 3： Calculate average days between transactions
+
+```sql
+-- Step 1: Get previous transaction date
+WITH transaction_date AS (
+    SELECT
+        customer_id,
+        txn_date,
+        LAG(txn_date) OVER (PARTITION BY customer_id ORDER BY txn_date) AS prev_transaction_date
+    FROM 
+        transaction
+)
+
+-- Step 2: Calculate days between transactions
+, date_diff AS (
+    SELECT
+        customer_id,
+        DATEDIFF(txn_date, prev_transaction_date) AS date_between_transactions
+    FROM transaction_date
+    WHERE prev_transaction_date IS NOT NULL
+)
+
+-- Step 3: Calculate average days between transactions
+SELECT
+    customer_id,
+    AVG(date_between_transactions) AS avg_days_transactions
+FROM date_diff
+GROUP BY customer_id;
+```
+
 ## 4. Classic Questions
 
 ---
