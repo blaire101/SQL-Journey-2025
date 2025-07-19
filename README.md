@@ -15,7 +15,7 @@
 - SELECT    :    NULL & <> ,  DISTINCT,   IF、 IFNULL(exp, value_if_null), case when
 - ORDER BY
 
-![image.png](1%20SQL%2011d94e330a4580658551c263214f9747/image.png)
+![sql](docs/sql-1.png)
 
 ## **2. Advanced Queries and Joins**
 
@@ -54,9 +54,9 @@ window functions mainly relies on Partitioned Table Functions (PTF).
 
 ---
 
-### 4.1  SQL : retained_within_30_days
+### 4.1  SQL : retained\_within\_30\_days
 
-![image.png](1%20SQL%2011d94e330a4580658551c263214f9747/image%201.png)
+![sql](docs/sql-2.png)
 
 | seller_id | transaction_date | amount | currency |
 | --- | --- | --- | --- |
@@ -115,7 +115,7 @@ ORDER BY
 
 ### 5.9 Split live streams, highest number of online streamers
 
-分拆直播，在线最高主播数 - SUM(tag) OVER (ORDER BY dt) AS amt
+`SUM(tag) OVER (ORDER BY dt) AS amt`
 
 ---
 
@@ -130,7 +130,7 @@ ORDER BY
 | 1006 | 2021-06-14 21:00:00 | 2021-06-14 23:00:00 |
 | 1007 | 2021-06-14 22:00:00 | 2021-06-14 23:00:00 |
 
-第一步：拆分数据
+#### S1: Split the data
 
 | dt | tag |
 | --- | --- |
