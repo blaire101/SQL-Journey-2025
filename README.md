@@ -153,10 +153,16 @@ WITH aggregated AS (
 )
 ```
 
+---
+
+>
+> 🥇 Within each day, assign a unique rank to each city based on its sales, from highest to lowest.
+> `ROW_NUMBER() OVER (PARTITION BY order_date ORDER BY daily_sales DESC) AS rank`,
+>
 > 🔁 "One total per date, repeated across rows of that day."
 >     `SUM(daily_sales) OVER (PARTITION BY order_date) AS total`,
 > 
-> ⛓️ “City by city accumulation within the same date.”
+> 🧠 “City by city accumulation within the same date.”
 >     `SUM(daily_sales) OVER (PARTITION BY order_date ORDER BY daily_sales DESC) AS cumulative`
 
 ```sql
