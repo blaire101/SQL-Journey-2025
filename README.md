@@ -18,10 +18,6 @@
 
 ### 2. Joins & Subqueries
 - `INNER JOIN`, `LEFT JOIN`, `RIGHT JOIN`, `SELF JOIN`, `CROSS JOIN`
-- Cartesian Product
-- Subqueries in `SELECT`, `FROM`, and `WHERE`
-
----
 
 ## 🧮 SQL Advanced Aggregation & Window Functions
 
